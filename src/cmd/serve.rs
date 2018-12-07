@@ -293,6 +293,17 @@ pub fn serve(
             format!("-> Template changed {}", path.display())
         };
         console::info(&msg);
+
+        // Reload 404.html template if it was just modified
+        let current_dir = pwd.clone();
+        let mut partial_path = PathBuf::from("/");
+        partial_path.push(path.strip_prefix(current_dir).unwrap_or(path));
+        if partial_path == Path::new("/templates/404.html") {
+            match site.render_404() {
+                Ok(_) => console::info(&format!("404.html was reloaded ok.")),
+                Err(e) => console::error(&format!("Reload error: {:?}", e)),
+            };
+        }
         if let Some(ref broadcaster) = broadcaster {
             // Force refresh
             rebuild_done_handling(
